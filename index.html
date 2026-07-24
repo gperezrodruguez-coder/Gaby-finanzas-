@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#8b7966">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Gaby Finanzas">
+<title>Gaby Finanzas</title>
+<style>
+:root{--bg:#f7f3ee;--card:#fff;--ink:#28241f;--muted:#756e65;--line:#e8dfd5;--accent:#8b7966;--soft:#efe7de;--green:#2e7556;--red:#b84a42;--blue:#456b8a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{max-width:1180px;margin:auto;padding:calc(28px + env(safe-area-inset-top)) 18px 14px}h1{margin:0;font-size:clamp(30px,6vw,50px)}p{color:var(--muted)}
+main{max-width:1180px;margin:auto;padding:0 18px calc(80px + env(safe-area-inset-bottom))}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 8px 24px rgba(40,30,20,.04)}
+.s3{grid-column:span 3}.s4{grid-column:span 4}.s6{grid-column:span 6}.s8{grid-column:span 8}.s12{grid-column:span 12}
+.label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.metric{font-size:28px;font-weight:800;margin-top:5px}h2{font-size:20px;margin:0 0 14px}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:10px 6px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--muted)}
+.note{padding:13px;border-left:4px solid var(--accent);background:#faf8f4;border-radius:10px;margin:9px 0}.priority{border-left-color:var(--red)}.success{border-left-color:var(--green)}
+.progress{height:11px;background:var(--soft);border-radius:99px;overflow:hidden}.bar{height:100%;background:var(--accent)}
+input,select,button{font:inherit}input,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:11px;background:#fff;font-size:16px}
+button{border:0;border-radius:11px;padding:12px 13px;background:var(--accent);color:#fff;font-weight:700}.btn-secondary{background:var(--soft);color:var(--ink)}.btn-danger{background:var(--red)}.btn-small{padding:8px 10px;font-size:13px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:9px}.full{grid-column:1/-1}.row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}.small{font-size:12px;color:var(--muted)}.pill{background:var(--soft);padding:4px 8px;border-radius:999px;font-size:12px}
+.nav{position:sticky;top:0;z-index:5;background:rgba(247,243,238,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);overflow:auto;white-space:nowrap;padding:8px 14px}.nav button{width:auto;margin-right:7px;padding:9px 12px;background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.section{scroll-margin-top:65px}.modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center;z-index:20}.modal.open{display:flex}.sheet{background:var(--bg);width:min(680px,100%);max-height:88vh;overflow:auto;border-radius:24px 24px 0 0;padding:18px}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1}
+@media(max-width:820px){.s3,.s4,.s6,.s8{grid-column:span 12}.form{grid-template-columns:1fr}.metric{font-size:25px}.card{border-radius:17px;padding:16px}}
+</style>
+</head>
+<body>
+<header><h1>Gaby Finanzas</h1><p>Tu asesor para deudas, casa, viajes y futuro bebé.</p></header>
+<div class="nav">
+<button onclick="go('resumen')">Resumen</button>
+<button onclick="go('ingresos')">Ingresos</button>
+<button onclick="go('gastos')">Gastos</button>
+<button onclick="go('deudas')">Deudas</button>
+<button onclick="go('metas')">Metas</button>
+<button onclick="go('asesor')">Asesor</button>
+</div>
+
+<main><div class="grid">
+<div id="resumen" class="section card s3"><div class="label">Ingreso base</div><div class="metric" id="baseIncome"></div></div>
+<div class="card s3"><div class="label">Gastos conocidos</div><div class="metric" id="fixedExpenses"></div></div>
+<div class="card s3"><div class="label">Pagos de deuda</div><div class="metric" id="minDebt"></div></div>
+<div class="card s3"><div class="label">Disponible conservador</div><div class="metric" id="available"></div></div>
+
+<div class="card s6"><h2>Presupuesto por persona</h2><div id="byOwner"></div></div>
+<div class="card s6"><h2>Prioridad recomendada</h2><div id="priority"></div></div>
+
+<div id="ingresos" class="section card s6">
+<div class="row"><h2>Ingresos</h2><button class="btn-small" onclick="openIncome()">Editar</button></div>
+<div id="incomeView"></div>
+</div>
+
+<div id="gastos" class="section card s6">
+<div class="row"><h2>Gastos</h2><button class="btn-small" onclick="openExpense()">Añadir gasto</button></div>
+<div id="expensesView"></div>
+</div>
+
+<div id="deudas" class="section card s8">
+<div class="row"><h2>Deudas</h2><button class="btn-small" onclick="openDebt()">Añadir deuda</button></div>
+<div style="overflow:auto"><table><thead><tr><th>Deuda</th><th>Balance</th><th>APR</th><th>Pago</th><th></th></tr></thead><tbody id="debts"></tbody></table></div>
+</div>
+
+<div class="card s4">
+<div class="row"><h2>Pagos programados</h2><button class="btn-small" onclick="openScheduled()">Añadir</button></div>
+<div id="scheduled"></div>
+</div>
+
+<div id="metas" class="section card s8">
+<div class="row"><h2>Metas</h2><button class="btn-small" onclick="openGoal()">Añadir meta</button></div>
+<div id="goals"></div>
+</div>
+
+<div class="card s4">
+<h2>Respaldo</h2>
+<p class="small">Puedes descargar una copia de tus datos o restaurarlos si cambias de teléfono.</p>
+<div class="actions"><button onclick="exportData()">Descargar datos</button><button class="btn-secondary" onclick="document.getElementById('importFile').click()">Restaurar</button></div>
+<input id="importFile" type="file" accept=".json" hidden onchange="importData(event)">
+<button class="btn-danger" style="margin-top:8px;width:100%" onclick="resetAll()">Restablecer app</button>
+</div>
+
+<div id="asesor" class="section card s12"><h2>Tu asesor financiero</h2><div id="advice"></div></div>
+</div></main>
+
+<div id="modal" class="modal" onclick="closeModal(event)">
+<div class="sheet" onclick="event.stopPropagation()">
+<div class="row"><h2 id="modalTitle">Editar</h2><button class="btn-secondary btn-small" onclick="closeModal()">Cerrar</button></div>
+<div id="modalBody"></div>
+</div>
+</div>
+
+<script>
+const seed={
+income:{gaby_min:4800,gaby_avg:5150,gaby_max:5500,husband_min:2000,husband_avg:3500,husband_max:5000},
+expenses:[
+{id:1,name:'Carro',amount:540,owner:'Gaby',category:'Transporte'},
+{id:2,name:'Luz',amount:169,owner:'Gaby',category:'Hogar'},
+{id:3,name:'Netflix',amount:30,owner:'Gaby',category:'Suscripciones'},
+{id:4,name:'Peacock',amount:7,owner:'Gaby',category:'Suscripciones'},
+{id:5,name:'Apple Music',amount:12,owner:'Gaby',category:'Suscripciones'},
+{id:6,name:'Amazon Prime',amount:18,owner:'Gaby',category:'Suscripciones'},
+{id:7,name:'Materiales negocio',amount:250,owner:'Gaby',category:'Negocio'},
+{id:8,name:'Internet',amount:71,owner:'Esposo',category:'Hogar'},
+{id:9,name:'Agua',amount:20,owner:'Esposo',category:'Hogar'},
+{id:10,name:'Comida hogar',amount:400,owner:'Esposo',category:'Comida'},
+{id:11,name:'Celular e iPad',amount:140,owner:'Esposo',category:'Comunicación'},
+{id:12,name:'Gasolina',amount:159,owner:'Esposo',category:'Transporte'},
+{id:13,name:'Restaurantes',amount:150,owner:'Ambos',category:'Comida'}],
+debts:[
+{id:1,name:'Venture X',balance:1214.85,apr:28.49,payment:25,extra:0,owner:'Gaby'},
+{id:2,name:'Venture',balance:1621.26,apr:28.24,payment:53,extra:0,owner:'Gaby'},
+{id:3,name:'Discover',balance:3206.43,apr:null,payment:90,extra:0,owner:'Gaby'},
+{id:4,name:'PayPal',balance:553.42,apr:null,payment:61,extra:0,owner:'Gaby'},
+{id:5,name:'Kiwi',balance:900,apr:30,payment:130,extra:0,owner:'Gaby'},
+{id:6,name:'Préstamo terreno',balance:27994.15,apr:15,payment:657.8,extra:3774,owner:'Ambos'}],
+scheduled:[
+{id:1,name:'Seguro Social',amount:760,date:'2026-08-15'},
+{id:2,name:'Seguro Social',amount:760,date:'2026-10-15'},
+{id:3,name:'Seguro Social',amount:760,date:'2026-12-15'},
+{id:4,name:'Ingeniero',amount:1800,date:''}],
+goals:[
+{id:1,name:'Casa',target:40000,saved:4000,target_date:'2027-12-31'},
+{id:2,name:'Futuro bebé',target:30000,saved:0,target_date:'2030-11-01'},
+{id:3,name:'Viajes',target:0,saved:0,target_date:''}]
+};
+let data=JSON.parse(localStorage.getItem('gaby_finanzas_editable')||'null')||seed;
+const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n||0));
+const uid=()=>Date.now()+Math.floor(Math.random()*1000);
+function go(id){document.getElementById(id).scrollIntoView({behavior:'smooth'})}
+function save(){localStorage.setItem('gaby_finanzas_editable',JSON.stringify(data));render()}
+function modal(title,body){modalTitle.textContent=title;modalBody.innerHTML=body;modal.classList.add('open')}
+function closeModal(e){if(e&&e.target!==modal)return;modal.classList.remove('open')}
+function val(id){return document.getElementById(id).value}
+
+function render(){
+ const base=data.income.gaby_min+data.income.husband_min;
+ const expenses=data.expenses.reduce((s,x)=>s+Number(x.amount||0),0);
+ const debtPay=data.debts.reduce((s,x)=>s+Number(x.payment||0)+Number(x.extra||0),0);
+ baseIncome.textContent=money(base);fixedExpenses.textContent=money(expenses);minDebt.textContent=money(debtPay);available.textContent=money(base-expenses-debtPay);
+
+ const owners={};data.expenses.forEach(x=>owners[x.owner]=(owners[x.owner]||0)+Number(x.amount||0));
+ byOwner.innerHTML=Object.entries(owners).map(([k,v])=>`<div class="row note"><strong>${k}</strong><span>${money(v)}/mes</span></div>`).join('');
+
+ const active=[...data.debts].filter(d=>Number(d.balance)>0).sort((a,b)=>(Number(b.apr||0)-Number(a.apr||0))||Number(a.balance)-Number(b.balance));
+ const first=active[0];
+ priority.innerHTML=first?`<div class="note priority"><strong>Primero:</strong> ${first.name} (${money(first.balance)}${first.apr?' · '+first.apr+'%':''}).</div><div class="note">Mantén los mínimos de las demás y concentra el sobrante en una sola deuda.</div>`:`<div class="note success">No tienes deudas registradas.</div>`;
+
+ incomeView.innerHTML=`<div class="note"><strong>Gaby:</strong> mínimo ${money(data.income.gaby_min)} · promedio ${money(data.income.gaby_avg)} · alto ${money(data.income.gaby_max)}</div><div class="note"><strong>Esposo:</strong> mínimo ${money(data.income.husband_min)} · promedio ${money(data.income.husband_avg)} · alto ${money(data.income.husband_max)}</div>`;
+
+ expensesView.innerHTML=data.expenses.map(x=>`<div class="row note"><div><strong>${x.name}</strong><div class="small">${x.owner} · ${x.category}</div></div><div><strong>${money(x.amount)}</strong> <button class="btn-secondary btn-small" onclick="openExpense(${x.id})">Editar</button></div></div>`).join('');
+
+ debts.innerHTML=data.debts.map(d=>`<tr><td>${d.name}<div class="small">${d.owner}</div></td><td>${money(d.balance)}</td><td>${d.apr??'—'}${d.apr?'%':''}</td><td>${money(Number(d.payment||0)+Number(d.extra||0))}</td><td><button class="btn-secondary btn-small" onclick="openDebt(${d.id})">Editar</button></td></tr>`).join('');
+
+ scheduled.innerHTML=data.scheduled.map(x=>`<div class="row note"><div><strong>${x.name}</strong><div class="small">${x.date||'Sin fecha'}</div></div><div><strong>${money(x.amount)}</strong> <button class="btn-secondary btn-small" onclick="openScheduled(${x.id})">Editar</button></div></div>`).join('');
+
+ goals.innerHTML=data.goals.map(g=>{const pct=g.target?Math.min(100,(g.saved/g.target)*100):0;let monthly='';if(g.target&&g.target_date){const months=Math.max(1,Math.ceil((new Date(g.target_date)-new Date())/2629800000));monthly=`Necesario: ${money(Math.max(0,g.target-g.saved)/months)} al mes durante ~${months} meses.`}return `<div class="note"><div class="row"><strong>${g.name}</strong><button class="btn-secondary btn-small" onclick="openGoal(${g.id})">Editar</button></div><div class="row"><span>${money(g.saved)} / ${money(g.target)}</span><span class="small">${g.target_date||''}</span></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div><div class="small" style="margin-top:6px">${monthly}</div></div>`}).join('');
+
+ let advice='';
+ if(first) advice+=`<div class="note priority"><strong>Deuda prioritaria:</strong> ${first.name}. Envía aquí el dinero extra después de cubrir todos los mínimos.</div>`;
+ const terreno=data.debts.find(d=>d.name.toLowerCase().includes('terreno'));
+ if(terreno) advice+=`<div class="note"><strong>Terreno:</strong> balance ${money(terreno.balance)}. Pago actual total ${money(Number(terreno.payment||0)+Number(terreno.extra||0))} al mes.</div>`;
+ const casa=data.goals.find(g=>g.name.toLowerCase().includes('casa'));
+ if(casa) advice+=`<div class="note success"><strong>Casa:</strong> llevas ${money(casa.saved)} de ${money(casa.target)}. Te faltan ${money(Math.max(0,casa.target-casa.saved))}.</div>`;
+ const baby=data.goals.find(g=>g.name.toLowerCase().includes('beb'));
+ if(baby&&baby.target_date){const months=Math.max(1,Math.ceil((new Date(baby.target_date)-new Date())/2629800000));advice+=`<div class="note"><strong>Futuro bebé:</strong> ahorro sugerido ${money(Math.max(0,baby.target-baby.saved)/months)} al mes.</div>`}
+ if(base-expenses-debtPay<0) advice+=`<div class="note priority"><strong>Alerta:</strong> el presupuesto conservador está negativo por ${money(Math.abs(base-expenses-debtPay))}. Revisa pagos extra o usa ingresos reales del mes.</div>`;
+ else advice+=`<div class="note"><strong>Disponible conservador:</strong> ${money(base-expenses-debtPay)} después de gastos conocidos y pagos de deuda.</div>`;
+ advice+=`<div class="note"><strong>Consejo:</strong> registra cada cambio en la app. El asesor recalcula automáticamente.</div>`;
+ document.getElementById('advice').innerHTML=advice;
+}
+
+function openIncome(){
+ modal('Editar ingresos',`<div class="form">
+<input id="gm" type="number" value="${data.income.gaby_min}" placeholder="Gaby mínimo">
+<input id="ga" type="number" value="${data.income.gaby_avg}" placeholder="Gaby promedio">
+<input id="gx" type="number" value="${data.income.gaby_max}" placeholder="Gaby máximo">
+<input id="hm" type="number" value="${data.income.husband_min}" placeholder="Esposo mínimo">
+<input id="ha" type="number" value="${data.income.husband_avg}" placeholder="Esposo promedio">
+<input id="hx" type="number" value="${data.income.husband_max}" placeholder="Esposo máximo">
+<button class="full" onclick="saveIncome()">Guardar ingresos</button></div>`)
+}
+function saveIncome(){data.income={gaby_min:+val('gm'),gaby_avg:+val('ga'),gaby_max:+val('gx'),husband_min:+val('hm'),husband_avg:+val('ha'),husband_max:+val('hx')};save();closeModal()}
+
+function openExpense(id){
+ const x=data.expenses.find(v=>v.id===id)||{id:uid(),name:'',amount:'',owner:'Gaby',category:'Hogar'};
+ modal(id?'Editar gasto':'Añadir gasto',`<div class="form">
+<input id="en" value="${x.name}" placeholder="Nombre">
+<input id="ea" type="number" value="${x.amount}" placeholder="Cantidad mensual">
+<select id="eo"><option ${x.owner==='Gaby'?'selected':''}>Gaby</option><option ${x.owner==='Esposo'?'selected':''}>Esposo</option><option ${x.owner==='Ambos'?'selected':''}>Ambos</option></select>
+<input id="ec" value="${x.category}" placeholder="Categoría">
+<button class="full" onclick="saveExpense(${x.id},${id?1:0})">Guardar</button>
+${id?`<button class="full btn-danger" onclick="deleteItem('expenses',${x.id})">Eliminar</button>`:''}</div>`)
+}
+function saveExpense(id,exists){const x={id,name:val('en'),amount:+val('ea'),owner:val('eo'),category:val('ec')};if(exists)data.expenses=data.expenses.map(v=>v.id===id?x:v);else data.expenses.push(x);save();closeModal()}
+
+function openDebt(id){
+ const d=data.debts.find(v=>v.id===id)||{id:uid(),name:'',balance:'',apr:'',payment:'',extra:0,owner:'Gaby'};
+ modal(id?'Editar deuda':'Añadir deuda',`<div class="form">
+<input id="dn" value="${d.name}" placeholder="Nombre">
+<input id="db" type="number" value="${d.balance}" placeholder="Balance">
+<input id="da" type="number" step=".01" value="${d.apr??''}" placeholder="APR %">
+<input id="dp" type="number" value="${d.payment}" placeholder="Pago mínimo">
+<input id="dx" type="number" value="${d.extra||0}" placeholder="Pago extra">
+<select id="do"><option ${d.owner==='Gaby'?'selected':''}>Gaby</option><option ${d.owner==='Esposo'?'selected':''}>Esposo</option><option ${d.owner==='Ambos'?'selected':''}>Ambos</option></select>
+<button class="full" onclick="saveDebt(${d.id},${id?1:0})">Guardar</button>
+${id?`<button class="full btn-danger" onclick="deleteItem('debts',${d.id})">Eliminar</button>`:''}</div>`)
+}
+function saveDebt(id,exists){const d={id,name:val('dn'),balance:+val('db'),apr:val('da')===''?null:+val('da'),payment:+val('dp'),extra:+val('dx'),owner:val('do')};if(exists)data.debts=data.debts.map(v=>v.id===id?d:v);else data.debts.push(d);save();closeModal()}
+
+function openScheduled(id){
+ const x=data.scheduled.find(v=>v.id===id)||{id:uid(),name:'',amount:'',date:''};
+ modal(id?'Editar pago':'Añadir pago',`<div class="form">
+<input id="sn" value="${x.name}" placeholder="Nombre">
+<input id="sa" type="number" value="${x.amount}" placeholder="Cantidad">
+<input id="sd" type="date" class="full" value="${x.date}">
+<button class="full" onclick="saveScheduled(${x.id},${id?1:0})">Guardar</button>
+${id?`<button class="full btn-danger" onclick="deleteItem('scheduled',${x.id})">Eliminar</button>`:''}</div>`)
+}
+function saveScheduled(id,exists){const x={id,name:val('sn'),amount:+val('sa'),date:val('sd')};if(exists)data.scheduled=data.scheduled.map(v=>v.id===id?x:v);else data.scheduled.push(x);save();closeModal()}
+
+function openGoal(id){
+ const g=data.goals.find(v=>v.id===id)||{id:uid(),name:'',target:'',saved:'',target_date:''};
+ modal(id?'Editar meta':'Añadir meta',`<div class="form">
+<input id="gn" value="${g.name}" placeholder="Nombre">
+<input id="gt" type="number" value="${g.target}" placeholder="Meta">
+<input id="gs" type="number" value="${g.saved}" placeholder="Ahorrado">
+<input id="gd" type="date" value="${g.target_date}">
+<button class="full" onclick="saveGoal(${g.id},${id?1:0})">Guardar</button>
+${id?`<button class="full btn-danger" onclick="deleteItem('goals',${g.id})">Eliminar</button>`:''}</div>`)
+}
+function saveGoal(id,exists){const g={id,name:val('gn'),target:+val('gt'),saved:+val('gs'),target_date:val('gd')};if(exists)data.goals=data.goals.map(v=>v.id===id?g:v);else data.goals.push(g);save();closeModal()}
+
+function deleteItem(key,id){if(confirm('¿Eliminar este elemento?')){data[key]=data[key].filter(x=>x.id!==id);save();closeModal()}}
+function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gaby-finanzas-respaldo.json';a.click()}
+function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{data=JSON.parse(r.result);save();alert('Datos restaurados.')}catch{alert('El archivo no es válido.')}};r.readAsText(f)}
+function resetAll(){if(confirm('¿Seguro que quieres volver a los datos iniciales?')){data=JSON.parse(JSON.stringify(seed));save()}}
+render();
+</script>
+</body>
+</html>
